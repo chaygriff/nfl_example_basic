@@ -28,14 +28,14 @@ depth_tackles <- left_join(solo_tackle_atl, depth, by = "solo_tackle_1_player_id
 # Generate bar plot to display total solo tackles for players at the Linebacker position
 
 depth_tackles %>%
-  group_by(position, depth_position, depth_team, solo_tackle_1_player_name) %>%
-  filter(position == 'OLB' | position == 'LB') %>%
-  summarise(freq = sum(solo_tackle)) %>%
-  arrange(depth_team) %>%
-  rename(solo_tackles = freq)%>%
-  ggplot(aes(reorder(solo_tackle_1_player_name, solo_tackles), solo_tackles)) +
+  group_by(solo_tackle_1_player_id, solo_tackle_1_player_name) %>%
+  filter(position == 'OLB' | position == 'ILB' | position == 'LB') %>%
+  mutate(position = case_when(grepl("OLB", position) ~ "LB", grepl("ILB", position) ~ "LB")) %>%
+  summarize(total_tackles = sum(solo_tackle)) %>%
+  ungroup() %>%
+  ggplot(aes(reorder(solo_tackle_1_player_name, total_tackles), total_tackles)) +
   geom_bar(stat = "identity", fill = "darkred", width = 0.5) +
-  geom_text(aes(label = depth_team)) +
+  geom_text(aes(label = total_tackles), hjust = -0.5) +
   coord_flip()+
   theme_bw()+
   ggtitle("Atlanta Falcons Solo Tackles",
@@ -43,5 +43,4 @@ depth_tackles %>%
   labs(y = "Solo Tackles") +
   labs(x = "Player Name")
 
-# What we observe is that player T.Andersen has a value of 1 at two different 
-# linebacker positions which throws off the appearance of the chart.
+
